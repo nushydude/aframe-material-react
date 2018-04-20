@@ -2,9 +2,11 @@ import * as React from 'react';
 import { Entity, Scene } from 'aframe-react';
 import Template from './Template';
 
+const NUM_ENTITIES = 10;
+
 const getEntities = () => {
   const entities = [];
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < NUM_ENTITIES; i++) {
     entities.push({
       position: {
         x: Math.random() * 10,
@@ -18,13 +20,13 @@ const getEntities = () => {
 
 class App extends React.Component {
   componentDidMount() {
-    // console.log('Render time (DOM Server - 10):', performance.now() - this.startTime);
+    console.log('Render time (DOM Server - 10):', performance.now() - this.startTime);
   }
 
   render() {
     const entities = getEntities();
 
-    // this.startTime = performance.now();
+    this.startTime = performance.now();
 
     return (
       <Scene>
