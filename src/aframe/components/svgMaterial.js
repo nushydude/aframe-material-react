@@ -15,59 +15,49 @@ const component = {
     },
   },
 
-  init() {
-    // console.log('this.data:', this.data);
-
-    // if (!this.data) {
-    //   return;
-    // }
-
-    const canvas  = document.createElement('canvas');
-
-    // TODO: set height and width of SVG
-		canvas.width = 256;
-    canvas.height = 256;
-    canvas.style = "display: none";
-
-    this.canvas = canvas;
-    this.ctx = this.canvas.getContext('2d');
-    
-    // this.ctx.fillStyle = '#FFFFFF';
-    // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    this.texture = new window.THREE.Texture(this.canvas);
-
-    if(this.el.object3D.children.length > 0) { //backwards compatibility
-			this.el.object3D.children[0].material = new window.THREE.MeshBasicMaterial();
-			this.el.object3D.children[0].material.map = this.texture;
-		} else { //backwards compatibility
-			this.el.object3D.material = new window.THREE.MeshBasicMaterial();
-			this.el.object3D.material.map = this.texture;
-		}
-
-    if(!this.el.hasLoaded) {
-      this.el.addEventListener('loaded', function() {
-        this.render();
-      });
-    } else {
-      this.render();
+  update(oldData) {
+    if (oldData === this.data) {
+      return;
     }
 
     const img = new Image();
 
     img.addEventListener('load', () => {
-      console.log('image loaded')
+      const canvas  = document.createElement('canvas');
 
-      this.ctx.drawImage(img, 0, 0);
+      // TODO: set matching dimensions from the SVG
+      canvas.width = 256;
+      canvas.height = 256;
+
+      const ctx = canvas.getContext('2d').drawImage(img, 0, 0);
+
+      this.applyMaterial(canvas.toDataURL('image/png'));
     });
 
     img.src = 'data:image/svg+xml,' + encodeURIComponent(this.data);
   },
 
-  render: function() {
-    console.log('render');
-		this.texture.needsUpdate = true;
+  applyMaterial(dataURI) {
+    const image = new Image();
+    image.src = dataURI;
+
+    if (this.texture) {
+      this.texture.dispose();
+    }
+
+    this.texture = new window.THREE.Texture(image);
+
+    this.el.object3D.children[0].material = new window.THREE.MeshBasicMaterial();
+		this.el.object3D.children[0].material.map = this.texture;
+
+    this.texture.needsUpdate = true;
   },
+
+  remove() {
+    if (this.texture) {
+      this.texture.dispose();
+    }
+  }
 };
 
 export default { name, component };
