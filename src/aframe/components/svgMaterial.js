@@ -22,33 +22,21 @@ const component = {
 
     const img = new Image();
 
-    img.addEventListener('load', () => {
-      const canvas  = document.createElement('canvas');
-
-      // TODO: set matching dimensions from the SVG
-      canvas.width = 256;
-      canvas.height = 256;
-
-      const ctx = canvas.getContext('2d').drawImage(img, 0, 0);
-
-      this.applyMaterial(canvas.toDataURL('image/png'));
-    });
+    img.addEventListener('load', () => this.applyMaterial(img));
 
     img.src = 'data:image/svg+xml,' + encodeURIComponent(this.data);
   },
 
-  applyMaterial(dataURI) {
-    const image = new Image();
-    image.src = dataURI;
-
+  applyMaterial(img) {
     if (this.texture) {
       this.texture.dispose();
+      delete this.texture;
     }
 
-    this.texture = new window.THREE.Texture(image);
+    this.texture = new window.THREE.Texture(img);
 
     this.el.object3D.children[0].material = new window.THREE.MeshBasicMaterial();
-		this.el.object3D.children[0].material.map = this.texture;
+    this.el.object3D.children[0].material.map = this.texture;
 
     this.texture.needsUpdate = true;
   },
@@ -57,6 +45,7 @@ const component = {
     if (this.texture) {
       this.texture.dispose();
     }
+
   }
 };
 
