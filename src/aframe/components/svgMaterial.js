@@ -1,39 +1,47 @@
-// import ReactDOM from 'react-dom';
+import React from 'react';
 import ReactDOMServer from 'react-dom/server';
+import { identity } from 'ramda';
+import { noop } from 'ramda-adjunct';
+import memoizeOne from 'memoize-one';
 
 const name = 'svg-material';
 
+const isSrcChanged = memoizeOne((a, b) => a === b);
+
 const component = {
   schema: {
-    default: '',
-    parse: (Component) => {
-      // const virtualDiv = document.createElement('div');
-      // ReactDOM.render(Component, virtualDiv);
-
-      // return virtualDiv.innerHTML;
-      return ReactDOMServer.renderToStaticMarkup(Component);
+    src: {
+      default: '',
+      parse: (Component) => ReactDOMServer.renderToStaticMarkup(<Component />),
     },
+    onChange: { default: noop, parse: identity },
+  },
+
+  createTexture() {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+
+      img.addEventListener('load', () => resolve(new window.THREE.Texture(img)));
+      img.addEventListener('error', reject);
+
+      img.src = `data:image/svg+xml,${encodeURIComponent(this.data.src)}`;
+    })
   },
 
   update(oldData) {
-    if (oldData === this.data) {
-      return;
+    if (!isSrcChanged(oldData.src, this.data.src)) {
+      this.updateTexture();
+
+      this.data.onChange();
     }
-
-    const img = new Image();
-
-    img.addEventListener('load', () => this.applyMaterial(img));
-
-    img.src = 'data:image/svg+xml,' + encodeURIComponent(this.data);
   },
 
-  applyMaterial(img) {
+  async updateTexture() {
     if (this.texture) {
       this.texture.dispose();
-      delete this.texture;
     }
 
-    this.texture = new window.THREE.Texture(img);
+    this.texture = await this.createTexture();
 
     this.el.object3D.children[0].material = new window.THREE.MeshBasicMaterial();
     this.el.object3D.children[0].material.map = this.texture;
@@ -45,8 +53,7 @@ const component = {
     if (this.texture) {
       this.texture.dispose();
     }
-
-  }
+  },
 };
 
 export default { name, component };

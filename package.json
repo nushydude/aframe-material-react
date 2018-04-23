@@ -5,6 +5,9 @@
   "dependencies": {
     "aframe": "^0.8.2",
     "aframe-react": "^4.4.0",
+    "memoize-one": "^3.1.1",
+    "ramda": "^0.25.0",
+    "ramda-adjunct": "^2.6.0",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
     "react-scripts": "1.1.4"
